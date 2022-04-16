@@ -31,7 +31,7 @@ cat $1 | gauplus -subs | unfurl -u domains | tee -a "/tmp/gau_$1"
 echo -e "\n${Yellow}[*] Prcosessing all files generated from tools\n${NC}"
 
 #Fomating files from amass for combining
-cat /tmp/ww.txt | cut -f 2 -d ']' | sed 's/ //g' | tee -a "/tmp/amass_final_$1"
+cat "/tmp/amass_$1" | cut -f 2 -d ']' | sed 's/ //g' | tee -a "/tmp/amass_final_$1"
 
 #Combining all the files
 echo -e "\n${Blue}Combining all the files\n${NC}"
