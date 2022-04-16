@@ -1,11 +1,116 @@
 #!/bin/bash
 
+#Settings color for pretty output
 NC='\033[0m'              # No Color
 Red='\033[0;31m'          # Red
 Green='\033[0;32m'        # Green
 Yellow='\033[0;33m'       # Yellow
 Blue='\033[0;34m'         # Blue
 
+
+
+#Checking if all tools are installed properly
+echo -e "${Yellow}[*] Checking if all tools are installed properly\n${NC}"
+
+if type amass &> /dev/null
+then
+    echo -e "${Green}Amass is installed\n${NC}"
+#elif [[ -f ~/Desktop/Tools/findomain-linux ]]                                                                #To be decided
+#then
+#    echo -e "${Red}Findomain is installed but symlink is missing\n${NC}"
+#    exit
+else
+    echo -e "${RED}Amass is not installed\n${NC}"
+    exit
+fi
+
+if type subfinder &> /dev/null
+then
+    echo -e "${Green}Subfinder is installed\n${NC}"
+elif [[ -f ~/go/bin/subfinder ]]
+then
+    echo -e "${Red}Subfinder is installed but symlink is missing\n${NC}"
+    exit
+else
+    echo -e "${RED}Subfinder is not installed\n${NC}"
+    exit
+fi
+
+if type gauplus &> /dev/null
+then
+    echo -e "${Green}Gauplus is installed\n${NC}"
+elif [[ -f ~/go/bin/gauplus ]]
+then
+    echo -e "${Red}Gauplus is installed but symlink is missing\n${NC}"
+    exit
+else
+    echo -e "${RED}Gauplus is not installed\n${NC}"
+    exit
+fi
+
+if type unfurl &> /dev/null
+then
+    echo -e "${Green}Unfurl is installed\n${NC}"
+elif [[ -f ~/go/bin/unfurl ]]
+then
+    echo -e "${Red}Unfurl is installed but symlink is missing\n${NC}"
+    exit
+else
+    echo -e "${RED}Unfurl is not installed\n${NC}"
+    exit
+fi
+
+if type httpx &> /dev/null
+then
+    echo -e "${Green}Httpx is installed\n${NC}"
+elif [[ -f ~/go/bin/httpx ]]
+then
+    echo -e "${Red}Httpx is installed but symlink is missing\n${NC}"
+    exit
+else
+    echo -e "${RED}Httpx is not installed\n${NC}"
+    exit
+fi
+
+
+
+#Checking if its running for second time
+#Building the env
+echo -e "${Yellow}[*] Checking if its runned before\n"
+
+if [[ ! -d "$PWD/old" ]]
+then
+    echo -e "${Blue}Yes moving all files to $PWD/old \n${NC}"
+    mkdir "$PWD/old" &> /dev/null;
+fi
+
+if [[ -f "$PWD/all_subdomain.txt" ]]
+then
+    mv "$PWD/all_subdomain.txt" "$PWD/old/all_subdomain.txt";
+fi
+
+if [[ -f "$PWD/httpx_url.txt" ]]
+then
+    mv "$PWD/httpx_url.txt" "$PWD/old/httpx_url.txt";
+fi
+    
+if [[ -f "$PWD/live.txt" ]]
+then
+    mv "$PWD/live.txt" "$PWD/old/live.txt";
+fi
+    
+if [[ -f "$PWD/403.txt" ]]
+then
+    mv "$PWD/403.txt" "$PWD/old/403.txt";
+fi
+
+if [[ -f "$PWD/404.txt" ]]
+then
+    mv "$PWD/404.txt" "$PWD/old/404.txt";
+fi
+
+
+#Finding all subdomain and storing it in all_subdomain.txt
 echo -e "${Yellow}[*] Finding all subdomain and storing it in all_subdomain.txt\n${NC}"
 
 #Subdomains from subfinder
@@ -55,48 +160,3 @@ sed -e "/404/{w $PWD/404.txt" -e 'd}' "$PWD/httpx_url.txt"
 #Sorting 403 domains
 echo -e "\n${Blue}Sorting 403 domains\n${NC}"
 sed -e "/403/{w $PWD/403.txt" -e 'd}' "$PWD/httpx_url.txt"
-
-
-#Checking if all went right
-
-echo -e "\m${Yellow}[*] Checking if all went right\n"
-
-if [[ -f "$PWD/all_subdomain.txt" ]]
-then
-    echo -e "${Green}all_subdomain.txt exist${NC}"
-else
-    echo -e "${RED}Something went wrong during subdomain enumeration${NC}"
-    exit
-fi
-
-if [[ -f "$PWD/httpx_url.txt" ]]
-then
-    echo -e "${Green}httpx_url.txt exist${NC}"
-else
-    echo -e "${RED}Something went wrong during httpx probbing${NC}"
-    exit
-fi
-
-if [[ -f "$PWD/live.txt" ]]
-then
-    echo -e "${Green}live.txt exist${NC}"
-else
-    echo -e "${RED}Something went wrong during httpx probbing or probably during sorting${NC}"
-    exit
-fi
-
-if [[ -f "$PWD/403.txt" ]]
-then
-    echo -e "${Green}403.txt exist${NC}"
-else
-    echo -e "${RED}Something went wrong during httpx probbing or probably during sorting${NC}"
-    exit
-fi
-
-if [[ -f "$PWD/403.txt" ]]
-then
-    echo -e "${Green}404.txt exist${NC}"
-else
-    echo -e "${RED}Something went wrong during httpx probbing or probably during sorting${NC}"
-    exit
-fi
