@@ -44,6 +44,38 @@ Domain_list()
 
 }
 
+# Function for getting the list of domains from recon.cloud #
+#############################################################
+
+Recon_cloud()
+{
+    Domain=$1
+    curl -s "https://recon.cloud/api/search?domain=$Domain" --output "/tmp/ans_$Domain.json"
+
+    Req_id=$(jq -r '.request_id' "/tmp/ans_$Domain.json")
+    Len=$(jq '.assets.assets | length' "/tmp/ans_$Domain.json")
+
+    if [[ $Req_id = "None"  ]]
+    then
+        if [ $Len -gt 0 ]
+        then
+            jq -r '.assets.assets[] | .domain + " " + .service + " "  + .region + " "  + .cname' "/tmp/ans_$Domain.json" | tee -a recon.cloud.txt
+        fi
+    else
+        while true; do
+            curl -s "https://recon.cloud/api/get_status?request_id=$Req_id" --output "/tmp/status_$Domain.json"
+            Status=$(jq -r '.status.stage' "/tmp/status_$Domain.json")
+            if [ $Status = "finished" ]
+            then
+            curl -s "https://recon.cloud/api/get_results?request_id=$Req_id" --output "/tmp/result_$Domain.json"
+            jq -r '.assets[] | .domain + " " + .service + " "  + .region + " "  + .cname' "/tmp/result_$Domain.json" | tee -a recon.cloud.txt
+            break
+            fi
+            sleep 3
+        done
+    fi
+}
+
 # Process the input options. Add options as needed.        #
 ############################################################
 # Get the options
