@@ -150,12 +150,12 @@ if [[ -f "$PWD/httpx_url.txt" ]]
 then
     mv "$PWD/httpx_url.txt" "$PWD/old/httpx_url.txt";
 fi
-    
+
 if [[ -f "$PWD/live.txt" ]]
 then
     mv "$PWD/live.txt" "$PWD/old/live.txt";
 fi
-    
+
 if [[ -f "$PWD/403.txt" ]]
 then
     mv "$PWD/403.txt" "$PWD/old/403.txt";
@@ -166,12 +166,18 @@ then
     mv "$PWD/404.txt" "$PWD/old/404.txt";
 fi
 
+if [[ -f "${PWD}/recon.cloud.txt" ]]
+then
+    mv "${PWD}/recon.cloud.txt" "${PWD}/old/recon.cloud.txt";
+fi
+
 # Function for getting the list of domains from recon.cloud #
 #############################################################
 
 Recon_cloud()
 {
     Domain=$1
+    echo -e "${Blue}Requesting subdomain for: $Domain"
     curl -s "https://recon.cloud/api/search?domain=$Domain" --output "/tmp/ans_$Domain.json"
 
     Req_id=$(jq -r '.request_id' "/tmp/ans_$Domain.json")
@@ -181,16 +187,17 @@ Recon_cloud()
     then
         if [ $Len -gt 0 ]
         then
-            jq -r '.assets.assets[] | .domain + " " + .service + " "  + .region + " "  + .cname' "/tmp/ans_$Domain.json" | tee -a recon.cloud.txt
+            jq -r '.assets.assets[] | .domain + " " + .service + " "  + .region + " "  + .cname' "/tmp/ans_$Domain.json" | tee -a "${PWD}/recon.cloud.txt"
         fi
     else
         while true; do
             curl -s "https://recon.cloud/api/get_status?request_id=$Req_id" --output "/tmp/status_$Domain.json"
             Status=$(jq -r '.status.stage' "/tmp/status_$Domain.json")
+            echo -ne "${Blue}Status: $Status\\r"
             if [ $Status = "finished" ]
             then
             curl -s "https://recon.cloud/api/get_results?request_id=$Req_id" --output "/tmp/result_$Domain.json"
-            jq -r '.assets[] | .domain + " " + .service + " "  + .region + " "  + .cname' "/tmp/result_$Domain.json" | tee -a recon.cloud.txt
+            jq -r '.assets[] | .domain + " " + .service + " "  + .region + " "  + .cname' "/tmp/result_$Domain.json" | tee -a "${PWD}/recon.cloud.txt"
             break
             fi
             sleep 3
@@ -211,7 +218,7 @@ subfinder -all -dL $List -o "/tmp/subf_$List"  -silent
 # Subdomains from amass
 echo -e "\n${Blue}Running Amass"
 
-amass enum -passive -df $List -src -config ~/.config/amass/config.ini -silent -o "/tmp/amass_$List" 
+amass enum -passive -df $List -src -config ~/.config/amass/config.ini -silent -o "/tmp/amass_$List"
 
 # Subdomains from findomain
 echo -e "\n${Blue}Running Findomain${NC}"
@@ -223,10 +230,23 @@ echo -e "${Blue}Running Gauplus for subdomain\n${NC}"
 
 cat $List | gauplus -subs | unfurl -u domains | tee -a "/tmp/gau_$List"
 
+# Subdomains from recon.cloud
+echo -e "\n${Blue}Getting Subdoman from recon.cloud\n"
+while IFS= read -r Dom
+do
+    Recon_cloud "$Dom"
+done < "$List"
+
 echo -e "\n${Yellow}[*] Prcosessing all files generated from tools\n${NC}"
+
+# Formating files for all files HTTPX                      #
+############################################################
 
 # Fomating files from amass for combining
 cat "/tmp/amass_$List" | cut -f 2 -d ']' | sed 's/ //g' | tee -a "/tmp/amass_final_$List"
+
+# Fomating files from recon.cloud for combining
+cat "${PWD}/recon.cloud.txt" | cut -f 1 -d " " | tee -a "/tmp/rc_final_$List"
 
 # Combining all the files
 echo -e "\n${Blue}Combining all the files\n${NC}"
