@@ -135,14 +135,13 @@ fi
 
 echo -e "${Yellow}[*] Checking if its runned before\n"
 
-if [[ ! -d "$PWD/old" ]]
+if [[ -f "$PWD/all_subdomain.txt" ]] 
 then
-    echo -e "${Blue}Yes moving all files to $PWD/old \n${NC}"
-    mkdir "$PWD/old" &> /dev/null;
-fi
-
-if [[ -f "$PWD/all_subdomain.txt" ]]
-then
+    echo -e "${Blue}Yes moving files to $PWD/old \n${NC}"
+   if [[ ! -d "$PWD/old" ]]
+   then
+      mkdir "$PWD/old" &> /dev/null;
+   fi
     mv "$PWD/all_subdomain.txt" "$PWD/old/all_subdomain.txt";
 fi
 
@@ -177,27 +176,25 @@ fi
 Recon_cloud()
 {
     Domain=$1
-    echo -e "${Blue}Requesting subdomain for: $Domain"
-    curl -s "https://recon.cloud/api/search?domain=$Domain" --output "/tmp/ans_$Domain.json"
+    UserAgent="Mozilla/5.0 (X11; Linux x86_64; rv:104.0) Gecko/20100101 Firefox/104.0"
+    echo -e "${Blue}Scanning AWS, Azure and GCP public cloud footprint:${NC} $Domain"
+    Ans=$(curl -A $UserAgent -s "https://recon.cloud/api/search?domain=$Domain")
 
-    Req_id=$(jq -r '.request_id' "/tmp/ans_$Domain.json")
-    Len=$(jq '.assets.assets | length' "/tmp/ans_$Domain.json")
-
-    if [[ $Req_id = "None"  ]]
-    then
-        if [ $Len -gt 0 ]
+    Req_id=$(jq -r '.request_id' <<< $Ans)
+    Len=$(jq '.cloud_assets_list | length' <<< $Ans)
+    if [ $Len -gt 0 ]
         then
-            jq -r '.assets.assets[] | .domain + " " + .service + " "  + .region + " "  + .cname' "/tmp/ans_$Domain.json" | tee -a "${PWD}/recon.cloud.txt"
-        fi
+            jq -r '.cloud_assets_list[] | .domain + " " + .service + " "  + .region + " "  + .cname' <<< $Ans | tee -a recon.cloud.txt
+            exit
     else
         while true; do
-            curl -s "https://recon.cloud/api/get_status?request_id=$Req_id" --output "/tmp/status_$Domain.json"
-            Status=$(jq -r '.status.stage' "/tmp/status_$Domain.json")
-            echo -ne "${Blue}Status: $Status\\r"
+            Req_Status=$(curl -A $UserAgent -s "https://recon.cloud/api/get_status?request_id=$Req_id")
+            Status=$(jq -r '.step' <<< $Req_Status)
+            echo -ne "${Blue}Status:${NC} $Status\\r"
             if [ $Status = "finished" ]
             then
-            curl -s "https://recon.cloud/api/get_results?request_id=$Req_id" --output "/tmp/result_$Domain.json"
-            jq -r '.assets[] | .domain + " " + .service + " "  + .region + " "  + .cname' "/tmp/result_$Domain.json" | tee -a "${PWD}/recon.cloud.txt"
+            Result=$(curl -A $UserAgent -s "https://recon.cloud/api/get_results?request_id=$Req_id")
+            jq -r '.cloud_assets_list[] | .domain + " " + .service + " "  + .region + " "  + .cname' <<< $Result | tee -a recon.cloud.txt
             break
             fi
             sleep 3
