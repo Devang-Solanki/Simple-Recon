@@ -185,7 +185,6 @@ Recon_cloud()
     if [ $Len -gt 0 ]
         then
             jq -r '.cloud_assets_list[] | .domain + " " + .service + " "  + .region + " "  + .cname' <<< $Ans | tee -a recon.cloud.txt
-            exit
     else
         while true; do
             Req_Status=$(curl -A $UserAgent -s "https://recon.cloud/api/get_status?request_id=$Req_id")
