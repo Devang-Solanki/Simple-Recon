@@ -271,4 +271,4 @@ sed -e "/403/{w $PWD/403.txt" -e 'd}' "$PWD/httpx_url.txt"
 
 # Checking for potential Subdomain Takeover using subzy
 echo -e "\n${Blue}Running subzy for potentail subdomamin takeover\n${NC}"
-cat "$PWD/404.txt" | cut -d " " -f 1 | xargs | sed -e 's/ /,/g'  | xargs -I '{}' subzy -hide_fails -target {} 
+cat "$PWD/httpx_url.txt" | cut -d " " -f 1 | xargs | sed -e 's/ /,/g'  | xargs -I '{}' subzy -hide_fails -target {} 
