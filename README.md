@@ -1,7 +1,7 @@
 # Simple-Recon
 A simple recon script for bug bounty
 
-The project is incomplete as of now
+The project is still in developement
 
 ### TODO
 ☑️ Automation for subdomain takeover
