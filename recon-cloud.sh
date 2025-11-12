@@ -33,8 +33,8 @@ while getopts "hd:" option; do
    esac
 done
 
-# Function for getting the list of domains from recon.cloud #
-#############################################################
+# Function for getting the list of domains from recon.cloud  #
+##############################################################
 
 UserAgent="Mozilla/5.0 (X11; Linux x86_64; rv:104.0) Gecko/20100101 Firefox/104.0"
 
