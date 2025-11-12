@@ -130,9 +130,9 @@ fi
 
 
 
-# Checking if its running for second time                  #
-# Building the env                                         #
-############################################################
+# Checking if its running for second time                   #
+# Building the env                                          #
+#############################################################
 
 echo -e "${Yellow}[*] Checking if its runned before\n"
 
