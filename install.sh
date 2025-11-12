@@ -24,6 +24,7 @@ gotools["httpx"]="go install -v github.com/projectdiscovery/httpx/cmd/httpx@late
 gotools["gauplus"]="go install github.com/bp0lr/gauplus@latest"
 gotools["subfinder"]="go install -v github.com/projectdiscovery/subfinder/v2/cmd/subfinder@latest"
 
+#Updating GO tools
 version="go1.17.6"
 printf "${Blue} Running: Installing/Updating Golang ${NC}\n\n"
 if [[ $(eval type go $DEBUG_ERROR | grep -o 'go is') == "go is" ]] && [ "$version" = $(go version | cut -d " " -f3) ]
