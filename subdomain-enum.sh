@@ -70,7 +70,8 @@ echo -e "${Yellow}[*] Checking if all tools are installed properly\n${NC}"
 if type amass &> /dev/null
 then
     echo -e "${Green}Amass is installed\n${NC}"
-#elif [[ -f ~/Desktop/Tools/findomain-linux ]]                                                                #To be decided
+#elif [[ -f ~/Desktop/Tools/findomain-linux ]]                                                                
+#To be decided
 #then
 #    echo -e "${Red}Findomain is installed but symlink is missing\n${NC}"
 #    exit
